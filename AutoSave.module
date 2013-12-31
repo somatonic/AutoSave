@@ -1,0 +1,85 @@
+<?php
+
+/**
+ * ProcessWire AutoSave Proof of concept
+ *
+ * ProcessWire 2.x
+ * Copyright (C) 2010 by Ryan Cramer
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ *
+ * http://www.processwire.com
+ * http://www.ryancramer.com
+ *
+ */
+
+class AutoSave extends WireData implements Module, ConfigurableModule {
+
+
+    protected static $defaults = array(
+            'autosave_interval' => 60
+        );
+
+    /**
+     * getModuleInfo is a module required by all modules to tell ProcessWire about them
+     *
+     * @return array
+     *
+     */
+    public static function getModuleInfo() {
+
+        return array(
+            'title' => 'Auto Save',
+            'version' => 1,
+            'summary' => __('Proof of concept auto save for pages in admin.'),
+            'href' => '',
+            'author' => "Philipp 'Soma' Urlich",
+            'singular' => true,
+            'autoload' => "template=admin",
+            'installs' => array("ProcessAutoSave"),
+            );
+    }
+
+
+
+    public function init() {
+
+    }
+
+    public function ready(){
+        $this->addHookAfter("ProcessPageEdit::execute", $this, "addScript");
+    }
+
+    public function addScript(){
+        $autosave_interval = $this->getConfig("autosave_interval");
+        if(!$autosave_interval || $autosave_interval < 30) $autosave_interval = 30;
+        $this->config->js("autosave_interval", $autosave_interval);
+        $this->config->scripts->add($this->config->urls->AutoSave . "AutoSave.js");
+        $this->config->styles->add($this->config->urls->AutoSave . "AutoSave.css");
+    }
+
+    /**
+     * get the config either default or overwritten by user config
+     * @param  string $key name of the option
+     * @return mixed      return requested option value
+     */
+    public function getConfig($key) {
+        return ($this->get($key)) ? $this->get($key) : self::$defaults[$key];
+    }
+
+    public static function getModuleConfigInputfields(array $data) {
+        $data = array_merge(self::$defaults, $data);
+        $inputfields = new InputfieldWrapper();
+
+        $f = wire("modules")->InputfieldInteger;
+        $f->attr("name", "autosave_interval");
+        $f->label = __("Autosave Interval");
+        $f->description = __("Interval in seconds. Can not be shorter than 30.");
+
+        if(!$data["autosave_interval"] || $data["autosave_interval"] < 30) $data["autosave_interval"] = 30;
+        $f->attr("value", $data["autosave_interval"]);
+
+        $inputfields->add($f);
+        return $inputfields;
+    }
+
+}
