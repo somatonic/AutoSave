@@ -1,4 +1,4 @@
-# Autosave Page
+# AutoSave
 
 This module saves the page via ajax when editing in the admin. The interval for saving the page is configurable in the AutoSave module settings.
 
