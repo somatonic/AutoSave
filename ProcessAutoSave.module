@@ -29,10 +29,10 @@ class ProcessAutoSave extends Process {
         return array(
 
             'title' => 'Process Auto Save',
-            'version' => 010,
+            'version' => 011,
             'summary' => __('Proof of concept auto save page in admin.'),
             'href' => '',
-            'author' => 'soma',
+            'author' => "Philipp 'Soma' Urlich",
             'singular' => true,
             'autoload' => false,
             'requires' => array("AutoSave"),
@@ -58,16 +58,20 @@ class ProcessAutoSave extends Process {
         $this->pageEdit = $this->modules->get("ProcessPageEdit");
         $this->pageEdit->setTrackChanges(true);
 
-        // if($this->config->ajax && (isset($_SERVER['HTTP_X_FIELDNAME']) || count($_POST))) {
-        //     if(isset($_SERVER['HTTP_X_FIELDNAME'])){
-        //         $this->pageContext->trackChange($_SERVER['HTTP_X_FIELDNAME']);
-        //     }
-        //     return $this->pageEdit->ajaxSave($this->pageContext);
-        // }
-
         if ($this->config->ajax && count($_POST)) {
             $form = $this->buildForm();
-            return $this->processInput($form);
+            $result = $this->processInput($form);
+            $message = array();
+            if($result) {
+                $message['error'] = false;
+                $message['message'] = $this->_("AutoSave: Page saved");
+                return json_encode($message);
+            } else {
+                $message['error'] = true;
+                $message['message'] = $this->_("AutoSave: Page saved but with errors...");
+                $message['errors'] = $form->getErrors(true);
+                return json_encode($message);
+            }
         }
     }
 
@@ -108,8 +112,16 @@ class ProcessAutoSave extends Process {
             if($field instanceof InputfieldWrapper && count($field->getChildren())) $this->processInput($field, $level + 1);
         }
 
-        // And save the page
-        return $this->pageContext->save();
+        $this->pageContext->save();
+
+        if(count($form->getErrors())){
+            // get errors for showing and clear them, so they don't stack (true)
+            return false;
+        } else {
+            return true;
+        }
+
+        //return $this->pageContext->save();
 
     }
 

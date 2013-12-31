@@ -11,7 +11,7 @@ ProcessWire 2.3+. Haven't really tested with 2.3.
 
 ## Known Issues
 
-- Not recognizing required fields. The page gets saved no matter if filled or not. Not sure how to handle this at all, but well, it's a proof of concept.
+- Nothing really obvious so far
 - Note that when you have multiple editors editing pages, it would be possible 2 persons editing the same page would overwrite each other, since the page is autosaved! The only solution for this would be to have my  PageEditSoftLock module enabled with the complete "Lock" option active, so the page would be locked for editing.
 
 ## Todo

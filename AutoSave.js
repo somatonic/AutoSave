@@ -4,15 +4,19 @@
 
     $(function(){
 
-        var $message = $("<div class='autosave_dialog autosave_message'>Page autosaved successful</div>").hide();
-        var $error = $("<div class='autosave_dialog autosave_error'>Page could not be saved</div>").hide();
+        var $message = $("<div class='autosave_dialog autosave_message'></div>").hide();
+        var $error = $("<div class='autosave_dialog autosave_error'></div>").hide();
 
         $("body").append($message);
         $("body").append($error);
 
         window.setInterval(function(){
-            tinyMCE.triggerSave();
-            for ( instance in CKEDITOR.instances ) CKEDITOR.instances[instance].updateElement();
+            if(window.tinyMCE !== undefined){
+                tinyMCE.triggerSave();
+            }
+            if(window.CKEDITOR !== undefined) {
+                for ( instance in CKEDITOR.instances ) CKEDITOR.instances[instance].updateElement();
+            }
 
             // serialize form and append page id
             var $data = $('form#ProcessPageEdit').serialize() + "&id=" + $('#PageIDIndicator').text();
@@ -25,18 +29,21 @@
                 data: $data,
                 dataType: "json",
                 success: function(data){
-                    if(data == 1){
-                        $message.slideToggle().delay(4000).fadeOut();
-                    } else {
-                        if(data.error == true){
-                            $error.text("Autosave Error: " + data.message).slideToggle().delay(4000).fadeOut();
+                    if(!data.error){
+                        $message.html(data.message).slideToggle().delay(3000).fadeOut();
+                    } else if(data.error){
+                        var messages = '';
+                        messages += data.message + "<br/>";
+                        for(var i in data.errors){
+                            messages += data.errors[i] + "<br/>";
                         }
+                        $error.html(messages).slideToggle().delay(5000).fadeOut();
                     }
                     //console.log(data);
                 }
             });
 
-        }, config.autosave_interval*1000);
+        }, 10000);
 
         //var $link = $('<a href="#">AJAX SAVE</a>');
         // $link.on('click',function(e){
