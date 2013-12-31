@@ -69,6 +69,7 @@ class ProcessAutoSave extends Process {
             } else {
                 $message['error'] = true;
                 $message['message'] = $this->_("AutoSave: Page saved but with errors...");
+                // get errors for showing and clear them, so they don't stack (true)
                 $message['errors'] = $form->getErrors(true);
                 return json_encode($message);
             }
@@ -115,7 +116,6 @@ class ProcessAutoSave extends Process {
         $this->pageContext->save();
 
         if(count($form->getErrors())){
-            // get errors for showing and clear them, so they don't stack (true)
             return false;
         } else {
             return true;
