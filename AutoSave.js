@@ -43,7 +43,7 @@
                 }
             });
 
-        }, 10000);
+        }, config.autosave_interval * 1000);
 
         //var $link = $('<a href="#">AJAX SAVE</a>');
         // $link.on('click',function(e){
