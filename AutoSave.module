@@ -16,7 +16,8 @@ class AutoSave extends WireData implements Module, ConfigurableModule {
 
 
     protected static $defaults = array(
-            'autosave_interval' => 60
+            'autosave_interval' => 60,
+            'use_on_published_pages' => 0,
         );
 
     /**
@@ -29,7 +30,7 @@ class AutoSave extends WireData implements Module, ConfigurableModule {
 
         return array(
             'title' => 'Auto Save',
-            'version' => 11,
+            'version' => 12,
             'summary' => __('Proof of concept auto save for pages in admin.'),
             'href' => '',
             'author' => "Philipp 'Soma' Urlich",
@@ -46,15 +47,24 @@ class AutoSave extends WireData implements Module, ConfigurableModule {
     }
 
     public function ready(){
-        $this->addHookAfter("ProcessPageEdit::execute", $this, "addScript");
+        $this->addHookAfter("ProcessPageEdit::execute", $this, "addScripts");
     }
 
-    public function addScript(){
+    public function addScripts(HookEvent $event){
+        $page = $event->object->getPage();
+
+        // only init the script if page is unpublished
+        if(!$this->getConfig("use_on_published_pages")){
+            if(!$page->isUnpublished()) return;
+        }
+
         $autosave_interval = $this->getConfig("autosave_interval");
         if(!$autosave_interval || $autosave_interval < 30) $autosave_interval = 30;
         $this->config->js("autosave_interval", $autosave_interval);
+
         $this->config->scripts->add($this->config->urls->AutoSave . "AutoSave.js");
         $this->config->styles->add($this->config->urls->AutoSave . "AutoSave.css");
+
     }
 
     /**
@@ -74,11 +84,17 @@ class AutoSave extends WireData implements Module, ConfigurableModule {
         $f->attr("name", "autosave_interval");
         $f->label = __("Autosave Interval");
         $f->description = __("Interval in seconds. Can not be shorter than 30.");
-
         if(!$data["autosave_interval"] || $data["autosave_interval"] < 30) $data["autosave_interval"] = 30;
         $f->attr("value", $data["autosave_interval"]);
-
         $inputfields->add($f);
+
+        $f = wire("modules")->InputfieldCheckbox;
+        $f->attr("name", "use_on_published_pages");
+        $f->label = __("Use AutoSave also on published pages.");
+        $f->attr("value", $data["use_on_published_pages"]);
+        $f->attr("checked", $data["use_on_published_pages"] ? 'checked' : '');
+        $inputfields->add($f);
+
         return $inputfields;
     }
 
