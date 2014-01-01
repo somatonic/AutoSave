@@ -16,11 +16,22 @@
                 tinyMCE.triggerSave();
             }
 
-            if(window.CKEDITOR !== undefined) {
-                for ( instance in CKEDITOR.instances ) CKEDITOR.instances[instance].updateElement();
-            }
+            // if(window.CKEDITOR !== undefined) {
+            //     for ( var instance in CKEDITOR.instances ) {
+            //         CKEDITOR.instances[instance].updateElement();
+            //         console.log(CKEDITOR.instances[instance]);
+            //     }
+            // }
 
-            // for all those inline ckeditor users
+            //for all those ckeditor users
+            $("form.InputfieldForm").find('.InputfieldCKEditor').each(function(){
+                $(this).find("textarea").each(function(){
+                    var $textarea = $(this);
+                    $textarea.val(CKEDITOR.instances["Inputfield_" + $textarea.attr("name")].getData());
+                });
+            });
+
+            //for all those inline ckeditor users
             $("form.InputfieldForm").find('.InputfieldCKEditorInline').each(function() {
                 var $input = $(this).next('input');
                 var value = $(this).html();
@@ -52,7 +63,8 @@
                 }
             });
 
-        }, config.autosave_interval * 1000);
+        }, config.autosave_interval * 1000 );
+
 
     });
 
