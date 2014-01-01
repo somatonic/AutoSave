@@ -29,7 +29,7 @@ class ProcessAutoSave extends Process {
         return array(
 
             'title' => 'Process Auto Save',
-            'version' => 12,
+            'version' => 13,
             'summary' => __('Proof of concept auto save page in admin.'),
             'href' => '',
             'author' => "Philipp 'Soma' Urlich",
@@ -111,6 +111,9 @@ class ProcessAutoSave extends Process {
                     $this->pageContext->trackChange($field->name);
                 }
             } else {
+                // prevent page status being changed for autosave
+                // or it will publish unpublished pages
+                if($field->name == "status") continue;
                 $this->pageContext->set($field->name, $field->value);
             }
 
