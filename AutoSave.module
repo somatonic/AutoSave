@@ -29,7 +29,7 @@ class AutoSave extends WireData implements Module, ConfigurableModule {
 
         return array(
             'title' => 'Auto Save',
-            'version' => 011,
+            'version' => 11,
             'summary' => __('Proof of concept auto save for pages in admin.'),
             'href' => '',
             'author' => "Philipp 'Soma' Urlich",

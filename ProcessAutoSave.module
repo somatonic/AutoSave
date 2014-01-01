@@ -29,7 +29,7 @@ class ProcessAutoSave extends Process {
         return array(
 
             'title' => 'Process Auto Save',
-            'version' => 012,
+            'version' => 12,
             'summary' => __('Proof of concept auto save page in admin.'),
             'href' => '',
             'author' => "Philipp 'Soma' Urlich",
