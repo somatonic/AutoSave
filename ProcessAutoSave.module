@@ -19,7 +19,7 @@ class ProcessAutoSave extends Process {
 
 
     /**
-     * getModuleInfo is a module required by all modules to tell ProcessWire about them
+     * getModuleInfo is a method required by all modules to tell ProcessWire about them
      *
      * @return array
      *
@@ -29,7 +29,7 @@ class ProcessAutoSave extends Process {
         return array(
 
             'title' => 'Process Auto Save',
-            'version' => 011,
+            'version' => 012,
             'summary' => __('Proof of concept auto save page in admin.'),
             'href' => '',
             'author' => "Philipp 'Soma' Urlich",
@@ -39,30 +39,35 @@ class ProcessAutoSave extends Process {
             );
     }
 
-    public function execute() {
-        // nothing yet
-    }
+    public function execute() { }
 
     /**
      * Save the page via Ajax
      * we don't use ProcessPageEdit::ajaxSave() as it doesn't seem to work with language fields
      * so we use some technic to build the form and process it like ProcessPageEdit does with a regular save
-     * @return [type] [description]
+     *
+     * @return json array with status of save with messages
      */
     public function executeAjaxSave(){
 
-        $this->pageId = (int) $this->input->post("id");
-        $this->pageContext = $this->pages->get($this->pageId);
-        $this->pageContext->setTrackChanges(true);
+        if($this->config->ajax && count($_POST)) {
 
-        $this->pageEdit = $this->modules->get("ProcessPageEdit");
-        $this->pageEdit->setTrackChanges(true);
+            $this->pageId = (int) $this->input->post("id");
+            $this->pageContext = $this->pages->get($this->pageId);
+            $this->pageContext->setTrackChanges(true);
 
-        if ($this->config->ajax && count($_POST)) {
+            $this->pageEdit = $this->modules->get("ProcessPageEdit");
+
             $form = $this->buildForm();
-            $result = $this->processInput($form);
+            $this->processInput($form);
+
+            $this->pageContext->save();
+
+            if(count($form->getErrors())) $errors = true;
+                else $errors = false;
+
             $message = array();
-            if($result) {
+            if(!$errors) {
                 $message['error'] = false;
                 $message['message'] = $this->_("AutoSave: Page saved");
                 return json_encode($message);
@@ -77,7 +82,8 @@ class ProcessAutoSave extends Process {
     }
 
     /*
-     * Borrowed from Fredi front end edit:
+     * Borrowed from Fredi front end edit
+     *
      * This method is simplified version of /wire/modules/process/ProcessPageEdit.module processInput() method
      *
      * First process the input, then loops through all the form fields, set page field values and finally saves the page
@@ -97,8 +103,6 @@ class ProcessAutoSave extends Process {
             // Process their values
             $field->setTrackChanges(true);
 
-            //$field->processInput($this->input->post);
-
             if(wire('languages') && $field->useLanguages) {
                 $v = $this->pageContext->get($field->name);
                 if(is_object($v)) {
@@ -112,16 +116,6 @@ class ProcessAutoSave extends Process {
 
             if($field instanceof InputfieldWrapper && count($field->getChildren())) $this->processInput($field, $level + 1);
         }
-
-        $this->pageContext->save();
-
-        if(count($form->getErrors())){
-            return false;
-        } else {
-            return true;
-        }
-
-        //return $this->pageContext->save();
 
     }
 
